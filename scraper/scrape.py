@@ -32,8 +32,10 @@ REQUEST_INTERVAL_S = 0.3
 # address; here a failed slice is retried an hour later on a new runner.
 TRANSIENT_BACKOFF_S = [1, 2, 4, 8]
 
-# A 403 is a block on this address. Waiting is the slowest cure and a new
-# runner is the fastest, so we wait once and then give the slice up.
+# A 403 gets one 60-second wait and one retry, because a block might have
+# lapsed within the minute. A second 403 ends the slice as blocked, because
+# waiting does not clear a per-address block - the next hourly run gets a
+# fresh runner, which is the actual cure.
 BLOCK_WAIT_S = 60
 
 _RANK = re.compile(rb'"characterName"\s*:')
@@ -79,7 +81,7 @@ def fetch_body(region, world_id, offset, state):
                 state["blocked_once"] = True
                 print(
                     f"403 at offset {offset} - waiting {BLOCK_WAIT_S}s once, "
-                    "then giving up on this slice.",
+                    "then retrying; a second 403 ends this slice.",
                     file=sys.stderr,
                 )
                 time.sleep(BLOCK_WAIT_S)
@@ -146,9 +148,15 @@ def scrape_slice(day, region, world_id, first, last):
     os.makedirs("out", exist_ok=True)
     name = asset_name(region, world_id, first, last)
     with gzip.open(os.path.join("out", name), "wb") as handle:
-        handle.write(b"\n".join(lines) + b"\n")
+        handle.write(b"".join(line + b"\n" for line in lines))
 
     print(f"{name}: {len(lines)} pages, status {status}")
+    # 0 even when status is "partial" or "blocked": a non-zero exit would fail
+    # the matrix job, and actions/upload-artifact in the next step would then
+    # be skipped - discarding whatever pages this slice did manage to fetch,
+    # which is the opposite of what partial data is written for. The slice's
+    # real status travels in the manifest, which publish.py derives by
+    # counting the file rather than by trusting this exit code.
     return 0
 
 
