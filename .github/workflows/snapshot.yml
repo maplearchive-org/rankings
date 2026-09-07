@@ -164,9 +164,10 @@ jobs:
     # guard keyed on any would skip publish entirely, ending the run all-green
     # with no release and nothing anywhere saying the day was lost. Gating on
     # needs.plan.result instead always lets publish.py itself decide: it
-    # rebuilds the same manifest and writes nothing new when the day really
-    # is whole, and it refuses - loudly, non-zero, under set -euo pipefail -
-    # when no world's depth was ever recorded.
+    # rebuilds the manifest - with a fresh generated_at, so the file is
+    # rewritten every time even though nothing about the day changed - when
+    # it is whole, and it refuses - loudly, non-zero, under set -euo
+    # pipefail - when no world's depth was ever recorded.
     if: always() && needs.plan.result == 'success'
     runs-on: ubuntu-latest
     env:
@@ -231,6 +232,11 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add "manifests/$DAY.json"
+          # merge_manifest stamps a fresh generated_at on every call, so this
+          # diff is never actually quiet - a second firing of an already-
+          # complete day still commits and pushes a manifest whose only
+          # change is that timestamp. The branch below is a safety net the
+          # timestamp keeps from firing in practice, not the ordinary path.
           if git diff --cached --quiet; then
             echo "Manifest unchanged."
           else

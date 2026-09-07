@@ -17,9 +17,9 @@ from slices import RANKS_PER_PAGE, asset_name, offsets_of
 API_BASE = "https://www.nexon.com/api/maplestory/no-auth/ranking/v2"
 
 # The same string the archive sends from its own address (src/config.ts:34).
-# The two must not drift: the archive's direct path is this worker's fallback,
-# and a rule that treated them differently would make the fallback behave
-# unlike the thing it stands in for - visible only on the day it matters.
+# The archive still sends this string for detect's own character lookups, and
+# one project presenting two different faces to the same endpoint is a
+# difference nobody would find until it mattered.
 USER_AGENT = "Mozilla/5.0"
 
 # 0.3 seconds, from an address that will make 500 requests and then be thrown
