@@ -156,9 +156,18 @@ jobs:
 
   publish:
     needs: [plan, scrape, replan, repair]
-    # always(), because a slice that failed in both waves must not stop the
-    # rest of the day from being published.
-    if: always() && needs.plan.outputs.any == 'true'
+    # Gated on whether plan SUCCEEDED, not on what it output. any=='false'
+    # is ambiguous: it means "the day is already whole" on an ordinary firing,
+    # but it also means "not one of the six worlds could be searched this
+    # firing" when the first probe hits Blocked or a run of ProbeFailed - in
+    # that case recorded stays {}, slices({}) is [] by construction, and a
+    # guard keyed on any would skip publish entirely, ending the run all-green
+    # with no release and nothing anywhere saying the day was lost. Gating on
+    # needs.plan.result instead always lets publish.py itself decide: it
+    # rebuilds the same manifest and writes nothing new when the day really
+    # is whole, and it refuses - loudly, non-zero, under set -euo pipefail -
+    # when no world's depth was ever recorded.
+    if: always() && needs.plan.result == 'success'
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
@@ -184,14 +193,17 @@ jobs:
           merge-multiple: true
 
       - name: Build the manifest from the files that arrived
-        # --depths falls back to plan's own output only because replan is
-        # skipped on the (theoretical, workflow_dispatch-only) run where
-        # plan.outputs.any was already false - the ordinary case is that
-        # replan ran and its depths are at least as complete as plan's, since
-        # a depth once recorded is carried forward rather than dropped.
-        # Without --depths at all, a perfectly good day with nothing left to
-        # repair would trip publish.py's own no-slices refusal, because no
-        # world's depth would appear to have ever been recorded.
+        # --depths falls back to plan's own output because replan's own
+        # invocation of plan.py can fail for an ordinary production reason -
+        # a malformed body during its search, a runner that dies - and when
+        # it does, replan's outputs are empty and this fallback is doing real
+        # work on a real day, not covering a theoretical case. The ordinary
+        # case is that replan ran cleanly and its depths are at least as
+        # complete as plan's, since a depth once recorded is carried forward
+        # rather than dropped. Without --depths at all, a perfectly good day
+        # with nothing left to repair would trip publish.py's own no-slices
+        # refusal, because no world's depth would appear to have ever been
+        # recorded.
         run: >
           python scraper/publish.py --day "$DAY"
           --depths '${{ needs.replan.outputs.depths || needs.plan.outputs.depths }}'

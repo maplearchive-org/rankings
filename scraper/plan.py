@@ -44,6 +44,15 @@ def fetch_page(region, world_id, page, state, fetch_body=None):
     arithmetic, not a lying probe. Raising instead hands the decision to the
     caller, which is exactly what search_missing does with it.
 
+    A 200 whose body is not valid JSON is the same fact as an unanswerable
+    probe, not a different one: scrape.py already documents this API as
+    capable of a short or malformed answer on an ordinary success status, and
+    a probe that cannot be parsed cannot say where the floor is any more than
+    one that never arrived can. It is ProbeFailed for exactly that reason -
+    the world stays missing rather than a boundary getting guessed from
+    nothing. A KeyError from a well-formed body with an unexpected shape is
+    left alone: that is a different fact, and it should still be loud.
+
     `state` is supplied by the caller and shared across every probe of one
     search rather than created fresh per page: a fresh dict per page would
     forget an earlier 403 and pay the sixty-second grace again on every
@@ -67,7 +76,12 @@ def fetch_page(region, world_id, page, state, fetch_body=None):
     body = fetch_body(region, world_id, offset, state)
     if body is None:
         raise ProbeFailed(f"{region}/{world_id} page {page} (offset {offset})")
-    return json.loads(body)
+    try:
+        return json.loads(body)
+    except json.JSONDecodeError as error:
+        raise ProbeFailed(
+            f"{region}/{world_id} page {page} (offset {offset}): {error}"
+        ) from error
 
 
 def search_missing(recorded, fetch_body=None):

@@ -34,6 +34,18 @@ class FetchPageDoesNotFakeAnAnswer(unittest.TestCase):
 
         self.assertEqual(result["totalCount"], 100)
 
+    def test_a_malformed_200_raises_probe_failed_rather_than_json_decode_error(self):
+        # scrape.py already documents this API as capable of a short or
+        # malformed body on an ordinary success status. A probe that cannot
+        # be parsed cannot say where the floor is any more than one that
+        # never arrived can - it is the same fact as an unanswerable probe,
+        # not a crash that should take down the search.
+        def truncated(region, world_id, offset, state):
+            return b'{"totalCount": 100, "ranks": ['  # cut off mid-body
+
+        with self.assertRaises(ProbeFailed):
+            fetch_page("na", 1, 1, {"blocked_once": False}, fetch_body=truncated)
+
     def test_a_blocked_probe_still_raises_blocked_not_probe_failed(self):
         def blocked(region, world_id, offset, state):
             raise Blocked("blocked")
