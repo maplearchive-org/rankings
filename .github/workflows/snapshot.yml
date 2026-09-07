@@ -129,6 +129,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Download the first wave's artifacts, so there is something to fill rather than start over
+        uses: actions/download-artifact@v4
+        with:
+          path: out/
+          pattern: slice-*
+          merge-multiple: true
       - run: >
           python scraper/scrape.py
           --day "${{ needs.plan.outputs.day }}"
