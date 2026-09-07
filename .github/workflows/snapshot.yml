@@ -1,0 +1,246 @@
+name: Snapshot
+
+on:
+  schedule:
+    # Once, not hourly: the ranking updates once a day, at 18:00 UTC, and the
+    # retry for whatever a runner's address got blocked on lives inside this
+    # one run (see the repair job below) rather than in a later firing. GitHub
+    # refuses to start a workflow run from an event raised with GITHUB_TOKEN,
+    # so a design that re-dispatched itself to retry would need a personal
+    # access token held as an organisation secret - needing no token anywhere
+    # is one of the properties this schedule was chosen for.
+    #
+    # The archive polls from 18:30 UTC every thirty minutes until the day is
+    # whole, so a firing GitHub delays by a few minutes costs nothing. A
+    # firing that never happens costs the day - which is the whole reason this
+    # is a cron entry and not something more clever.
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: snapshot
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      day: ${{ steps.plan.outputs.day }}
+      any: ${{ steps.plan.outputs.any }}
+      slices: ${{ steps.plan.outputs.slices }}
+      depths: ${{ steps.plan.outputs.depths }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s scraper -t scraper
+      - id: plan
+        # On the first firing of a ranking day this also binary-searches the
+        # floor in each of the six worlds, about 157 requests from this one
+        # runner, and writes the depths it found into its output. Later
+        # invocations this same run - the repair wave below - read them back
+        # instead of searching again.
+        run: python scraper/plan.py
+
+  scrape:
+    needs: plan
+    if: needs.plan.outputs.any == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      # 20 is the free tier's whole allowance. A day is about 45 slices under
+      # the level floor, so this one job runs about three waves of runners
+      # rather than the single wave twelve slices used to fit in.
+      max-parallel: 20
+      fail-fast: false
+      matrix:
+        slice: ${{ fromJson(needs.plan.outputs.slices) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: >
+          python scraper/scrape.py
+          --day "${{ needs.plan.outputs.day }}"
+          --region "${{ matrix.slice.region }}"
+          --world "${{ matrix.slice.world_id }}"
+          --from "${{ matrix.slice.from }}"
+          --to "${{ matrix.slice.to }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: slice-${{ matrix.slice.region }}-${{ matrix.slice.world_id }}-${{ matrix.slice.from }}
+          path: out/
+          retention-days: 1
+          if-no-files-found: warn
+
+  replan:
+    needs: [plan, scrape]
+    # always(), because a slice job that failed outright - not just a slice
+    # that came back partial or blocked, but the runner itself dying - must
+    # not stop the repair wave from being planned around whatever files did
+    # land.
+    if: always() && needs.plan.outputs.any == 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      any: ${{ steps.replan.outputs.any }}
+      slices: ${{ steps.replan.outputs.slices }}
+      depths: ${{ steps.replan.outputs.depths }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          path: out/
+          pattern: slice-*
+          merge-multiple: true
+      - id: replan
+        # --out-dir points this at the files the first wave actually wrote,
+        # so the manifest it builds is the truth about what arrived rather
+        # than an empty one: publish.py has not run yet at this point in the
+        # workflow, so read_manifest(day) is still None and only --out-dir
+        # can tell this invocation that eleven of twelve slices are already
+        # done. --depths carries the first invocation's discovered floors
+        # straight through, so a world already searched is never searched
+        # again and the partition it settled on cannot move underneath it.
+        run: >
+          python scraper/plan.py
+          --depths '${{ needs.plan.outputs.depths }}'
+          --out-dir out
+
+  repair:
+    needs: [plan, replan]
+    if: needs.replan.outputs.any == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      max-parallel: 20
+      fail-fast: false
+      matrix:
+        slice: ${{ fromJson(needs.replan.outputs.slices) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: >
+          python scraper/scrape.py
+          --day "${{ needs.plan.outputs.day }}"
+          --region "${{ matrix.slice.region }}"
+          --world "${{ matrix.slice.world_id }}"
+          --from "${{ matrix.slice.from }}"
+          --to "${{ matrix.slice.to }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          # A distinct name prefix, not the same "slice-..." the first wave
+          # used: an artifact name is immutable once uploaded, so a repaired
+          # slice cannot overwrite the first wave's upload of the same
+          # region/world/offset - it has to live beside it under a different
+          # name instead. publish downloads the first wave's artifacts and
+          # then this prefix second, into the same out/ directory; the two
+          # waves write files under the identical name asset_name() derives
+          # from region/world/offset, so the second download's plain file
+          # write physically overwrites the first wave's truncated file. That
+          # ordering, not the artifact API's own ordering, is what guarantees
+          # the repair wins.
+          name: repair-slice-${{ matrix.slice.region }}-${{ matrix.slice.world_id }}-${{ matrix.slice.from }}
+          path: out/
+          retention-days: 1
+          if-no-files-found: warn
+
+  publish:
+    needs: [plan, scrape, replan, repair]
+    # always(), because a slice that failed in both waves must not stop the
+    # rest of the day from being published.
+    if: always() && needs.plan.outputs.any == 'true'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      DAY: ${{ needs.plan.outputs.day }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Download the first wave's artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: out/
+          pattern: slice-*
+          merge-multiple: true
+
+      - name: Download the repair wave's artifacts, replacing any truncated file the first wave left
+        uses: actions/download-artifact@v4
+        with:
+          path: out/
+          pattern: repair-slice-*
+          merge-multiple: true
+
+      - name: Build the manifest from the files that arrived
+        # --depths falls back to plan's own output only because replan is
+        # skipped on the (theoretical, workflow_dispatch-only) run where
+        # plan.outputs.any was already false - the ordinary case is that
+        # replan ran and its depths are at least as complete as plan's, since
+        # a depth once recorded is carried forward rather than dropped.
+        # Without --depths at all, a perfectly good day with nothing left to
+        # repair would trip publish.py's own no-slices refusal, because no
+        # world's depth would appear to have ever been recorded.
+        run: >
+          python scraper/publish.py --day "$DAY"
+          --depths '${{ needs.replan.outputs.depths || needs.plan.outputs.depths }}'
+
+      - name: Create or update the release for this ranking day
+        run: |
+          set -euo pipefail
+          gh release view "$DAY" >/dev/null 2>&1 || \
+            gh release create "$DAY" --title "$DAY" \
+              --notes "World ranking snapshot for ranking day $DAY."
+          # --clobber, because the repair wave's asset replaces the partial
+          # one the first wave uploaded rather than sitting beside it.
+          if compgen -G "out/*.ndjson.gz" > /dev/null; then
+            gh release upload "$DAY" out/*.ndjson.gz --clobber
+          fi
+          # The #name suffix sets the ASSET name. Without it gh would name the
+          # asset after the file's basename, 2026-09-06.json, and the archive
+          # asks for manifest.json - the mismatch would 404 every night while
+          # the archive quietly fell back to scraping all 6,000+ pages itself.
+          gh release upload "$DAY" "manifests/$DAY.json#manifest.json" --clobber
+
+      - name: Commit the manifest
+        run: |
+          set -euo pipefail
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "manifests/$DAY.json"
+          if git diff --cached --quiet; then
+            echo "Manifest unchanged."
+          else
+            # This commit is not bookkeeping. GitHub disables scheduled
+            # workflows in a repository that has seen no activity for sixty
+            # days, and a service that published only releases would stop on
+            # its own, quietly, on a schedule nobody is watching.
+            git commit -m "chore: manifest for ranking day $DAY"
+            git push
+          fi
+
+      - name: Drop assets older than thirty days
+        run: |
+          set -euo pipefail
+          cutoff=$(date -u -d '30 days ago' +%F)
+          # Tags are ISO dates, so a string comparison is a date comparison.
+          gh release list --limit 200 --json tagName --jq '.[].tagName' | while read -r tag; do
+            if [[ "$tag" < "$cutoff" ]]; then
+              gh release view "$tag" --json assets --jq '.assets[].name' | while read -r asset; do
+                case "$asset" in
+                  *.ndjson.gz) gh release delete-asset "$tag" "$asset" --yes ;;
+                esac
+              done
+            fi
+          done
