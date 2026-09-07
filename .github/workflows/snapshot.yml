@@ -129,11 +129,28 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Download the first wave's artifacts, so there is something to fill rather than start over
+      - name: Download this slice's own first-wave file, so there is something to fill rather than start over
         uses: actions/download-artifact@v4
         with:
           path: out/
-          pattern: slice-*
+          # This slice's artifact from the first wave, and nothing else. The
+          # name is built from the same matrix values the first wave built it
+          # from, so it addresses exactly one artifact.
+          #
+          # Not `slice-*`: the upload step below sends the whole of out/, so a
+          # job that downloaded every slice would upload a copy of every slice
+          # - each one a first-wave file, stale for every slice but its own.
+          # publish merges all repair-slice-* artifacts into one directory in
+          # no defined order, so those stale copies would overwrite other
+          # jobs' repaired files at random. The repair wave would undo itself,
+          # differently on every run.
+          #
+          # `pattern` rather than `name`, because a first wave whose job died
+          # outright uploaded nothing for this slice, and a pattern that
+          # matches no artifact succeeds with an empty download - which is
+          # correct here: there is simply nothing to fill, and scrape.py
+          # starts from nothing exactly as it does in the first wave.
+          pattern: slice-${{ matrix.slice.region }}-${{ matrix.slice.world_id }}-${{ matrix.slice.from }}
           merge-multiple: true
       - run: >
           python scraper/scrape.py
@@ -152,9 +169,14 @@ jobs:
           # then this prefix second, into the same out/ directory; the two
           # waves write files under the identical name asset_name() derives
           # from region/world/offset, so the second download's plain file
-          # write physically overwrites the first wave's truncated file. That
-          # ordering, not the artifact API's own ordering, is what guarantees
-          # the repair wins.
+          # write physically overwrites the first wave's file. That ordering,
+          # not the artifact API's own ordering, is what guarantees the
+          # repair wins.
+          #
+          # This is only safe because out/ holds this slice and no other - see
+          # the download step above. The file it holds is a superset of the
+          # first wave's: scrape.py started from that file and added the
+          # offsets missing from it, so overwriting on download loses nothing.
           name: repair-slice-${{ matrix.slice.region }}-${{ matrix.slice.world_id }}-${{ matrix.slice.from }}
           path: out/
           retention-days: 1
