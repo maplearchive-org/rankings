@@ -47,6 +47,15 @@ BLOCK_WAIT_S = 60
 
 _RANK = re.compile(rb'"characterName"\s*:')
 
+# The prefix line.py always writes, matched on raw bytes so that recovering
+# an offset never requires opening the body that follows it. json.loads
+# would work too, but decoding and re-encoding is exactly what line.py's own
+# docstring says a line surviving from an earlier wave must never go
+# through - a huge exp value that round-trips through Python's json module
+# unchanged today is not a guarantee, and the whole point of carrying a line
+# over as bytes is to not need that guarantee.
+_OFFSET_PREFIX = re.compile(rb'^\{"o":(\d+),"r":')
+
 _next_request_at = 0.0
 
 
@@ -107,17 +116,56 @@ def fetch_body(region, world_id, offset, state):
     return None
 
 
+def _existing_lines(path):
+    """
+    The offsets one slice's file already carries, keyed by offset, as the
+    raw line bytes exactly as read - never decoded, never re-parsed.
+
+    {} when the file does not exist yet, which is every first-wave call: the
+    repair job is the only caller that will ever find something here, and
+    the presence of the file is the only signal this function or its caller
+    acts on. There is deliberately no flag for it.
+    """
+    lines = {}
+    if not os.path.exists(path):
+        return lines
+    with gzip.open(path, "rb") as handle:
+        body = handle.read()
+    for line in body.split(b"\n"):
+        if not line.strip():
+            continue
+        match = _OFFSET_PREFIX.match(line)
+        if match:
+            lines[int(match.group(1))] = line
+    return lines
+
+
 def scrape_slice(day, region, world_id, first, last):
     one = {"region": region, "world_id": world_id, "from": first, "to": last}
     state = {"blocked_once": False}
-    lines = []
+    name = asset_name(region, world_id, first, last)
+    path = os.path.join("out", name)
+    expected = offsets_of(one)
+
+    # A repair slice starts from whatever the first wave already wrote,
+    # rather than from nothing. Fetching an offset that file already carries
+    # would throw away a page the first wave paid for, on an address that is
+    # throttled by request count and gains nothing by re-asking for what it
+    # already holds - which is exactly the mistake the first production run
+    # made.
+    lines = _existing_lines(path)
     status = "complete"
 
-    for offset in offsets_of(one):
+    for offset in expected:
+        if offset in lines:
+            continue
+
         # Re-derived every page. Repairs run all day, so a late one can cross
         # 18:00 UTC - and pages from two ranking days under one release would
         # be corruption that can never be re-scraped, because the window is
-        # over. Writing nothing is the only safe answer.
+        # over. Returning now leaves the file exactly as it was read - which,
+        # on a repair call, is the first wave's file, untouched - rather than
+        # writing anything that could mix two days into one release.
         if ranking_day(datetime.now(timezone.utc)) != day:
             print(
                 "Ranking day rolled over during this slice. Writing nothing.",
@@ -148,16 +196,25 @@ def scrape_slice(day, region, world_id, first, last):
             status = "partial"
             continue
 
-        lines.append(slice_line(offset, body))
+        lines[offset] = slice_line(offset, body)
+
+    ordered = [lines[offset] for offset in expected if offset in lines]
+    # Completeness is decided against the union just written, not against
+    # what this call itself fetched: a repair call that finds nothing left
+    # to fetch - every offset already carried over - must still read as
+    # complete, and one that leaves even a single offset missing must not,
+    # regardless of whether that offset came from this call's own failure or
+    # was never there to begin with.
+    if len(ordered) == len(expected):
+        status = "complete"
 
     # Written even when incomplete: partial data is worth keeping, and the hole
     # is recorded in the manifest publish.py builds from the file itself.
     os.makedirs("out", exist_ok=True)
-    name = asset_name(region, world_id, first, last)
-    with gzip.open(os.path.join("out", name), "wb") as handle:
-        handle.write(b"".join(line + b"\n" for line in lines))
+    with gzip.open(path, "wb") as handle:
+        handle.write(b"".join(line + b"\n" for line in ordered))
 
-    print(f"{name}: {len(lines)} pages, status {status}")
+    print(f"{name}: {len(ordered)} pages, status {status}")
     # 0 even when status is "partial" or "blocked": a non-zero exit would fail
     # the matrix job, and actions/upload-artifact in the next step would then
     # be skipped - discarding whatever pages this slice did manage to fetch,

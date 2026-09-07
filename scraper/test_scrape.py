@@ -1,5 +1,6 @@
 import gzip
 import os
+import re
 import shutil
 import tempfile
 import unittest
@@ -7,6 +8,7 @@ from datetime import datetime, timezone
 from unittest.mock import patch
 
 from day import ranking_day
+from line import slice_line
 from scrape import Blocked, scrape_slice
 
 
@@ -38,6 +40,119 @@ class ScrapeSliceBlockedImmediately(unittest.TestCase):
         finally:
             os.chdir(cwd)
             shutil.rmtree(tmp_dir, ignore_errors=True)
+
+
+class ScrapeSliceGapFilling(unittest.TestCase):
+    """
+    scrape_slice must treat an existing out/<asset> as a starting point to
+    fill, not a file to overwrite - the exact defect the first production
+    run exposed: the repair wave refetched a whole slice and its download
+    clobbered the first wave's better file.
+    """
+
+    def setUp(self):
+        self.day = ranking_day(datetime.now(timezone.utc))
+        self.tmp_dir = tempfile.mkdtemp()
+        self.cwd = os.getcwd()
+        os.chdir(self.tmp_dir)
+        self.addCleanup(os.chdir, self.cwd)
+        self.addCleanup(shutil.rmtree, self.tmp_dir, ignore_errors=True)
+
+    def _write_existing(self, name, lines):
+        os.makedirs("out", exist_ok=True)
+        with gzip.open(os.path.join("out", name), "wb") as handle:
+            handle.write(b"".join(line + b"\n" for line in lines))
+
+    def test_only_the_offsets_missing_from_the_file_are_fetched(self):
+        # A slice of five offsets - 1, 11, 21, 31, 41 - with 21 and 41
+        # already on disk from an earlier wave.
+        existing_line_21 = slice_line(21, b'{"totalCount":1,"ranks":[21]}')
+        existing_line_41 = slice_line(41, b'{"totalCount":1,"ranks":[41]}')
+        self._write_existing(
+            "na-45-000001-000041.ndjson.gz",
+            [existing_line_21, existing_line_41],
+        )
+
+        requested = []
+
+        def fake_fetch_body(region, world_id, offset, state):
+            requested.append(offset)
+            return (
+                b'{"totalCount":1,"ranks":['
+                + b",".join(b'{"characterName":"x"}' for _ in range(10))
+                + b"]}"
+            )
+
+        with patch("scrape.fetch_body", side_effect=fake_fetch_body):
+            exit_code = scrape_slice(self.day, "na", 45, 1, 41)
+
+        self.assertEqual(exit_code, 0)
+        # 21 and 41 were already present; only the other three were asked
+        # for, and asked for exactly once each.
+        self.assertEqual(sorted(requested), [1, 11, 31])
+
+        with gzip.open(
+            os.path.join("out", "na-45-000001-000041.ndjson.gz"), "rb"
+        ) as handle:
+            body = handle.read()
+        pages = [line for line in body.split(b"\n") if line.strip()]
+
+        # The union, ordered by offset ascending, regardless of which wave
+        # a given line came from.
+        offsets = [
+            int(re.match(rb'\{"o":(\d+),', line).group(1)) for line in pages
+        ]
+        self.assertEqual(offsets, [1, 11, 21, 31, 41])
+
+    def test_a_line_carried_over_from_an_earlier_wave_is_byte_identical(self):
+        # A body carrying digits that would change under any decode/re-encode
+        # round trip - the same hazard line.py's own tests guard against.
+        carried_body = b'{"totalCount":1,"ranks":[{"exp":9007199254740993}]}'
+        carried_line = slice_line(11, carried_body)
+        self._write_existing("na-45-000001-000011.ndjson.gz", [carried_line])
+
+        def fake_fetch_body(region, world_id, offset, state):
+            return (
+                b'{"totalCount":1,"ranks":['
+                + b",".join(b'{"characterName":"x"}' for _ in range(10))
+                + b"]}"
+            )
+
+        with patch("scrape.fetch_body", side_effect=fake_fetch_body):
+            exit_code = scrape_slice(self.day, "na", 45, 1, 11)
+
+        self.assertEqual(exit_code, 0)
+
+        with gzip.open(
+            os.path.join("out", "na-45-000001-000011.ndjson.gz"), "rb"
+        ) as handle:
+            body = handle.read()
+        pages = [line for line in body.split(b"\n") if line.strip()]
+
+        self.assertIn(carried_line, pages)
+
+    def test_no_existing_file_behaves_exactly_as_before(self):
+        def fake_fetch_body(region, world_id, offset, state):
+            return (
+                b'{"totalCount":1,"ranks":['
+                + b",".join(b'{"characterName":"x"}' for _ in range(10))
+                + b"]}"
+            )
+
+        with patch("scrape.fetch_body", side_effect=fake_fetch_body):
+            exit_code = scrape_slice(self.day, "na", 45, 1, 21)
+
+        self.assertEqual(exit_code, 0)
+
+        with gzip.open(
+            os.path.join("out", "na-45-000001-000021.ndjson.gz"), "rb"
+        ) as handle:
+            body = handle.read()
+        pages = [line for line in body.split(b"\n") if line.strip()]
+        offsets = [
+            int(re.match(rb'\{"o":(\d+),', line).group(1)) for line in pages
+        ]
+        self.assertEqual(offsets, [1, 11, 21])
 
 
 if __name__ == "__main__":
