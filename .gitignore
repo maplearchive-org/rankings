@@ -1,0 +1,6 @@
+# Written by scrape.py and read back by plan.py/publish.py within a single
+# run. manifests/ is not here: the committed manifest is what keeps GitHub
+# from disabling the scheduled workflow in a repository idle for sixty days,
+# and it is the record of what each ranking day was partitioned against.
+out/
+scraper/__pycache__/
