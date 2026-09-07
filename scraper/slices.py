@@ -15,12 +15,30 @@ WORLDS = [
 
 RANKS_PER_PAGE = 10
 
-# A slice is 500 requests from one address, and that number is the one thing
-# the level floor did not change: the evidence says the ceiling behaves like
-# roughly 800 requests per five-minute window per address, and 500 is about
-# two thirds of it. What changed is how many slices there are - about 45 a
-# day rather than twelve - because a world's depth is discovered each morning.
-PAGES_PER_SLICE = 500
+# 250, not the 500 the first production run shipped with. 500 was chosen
+# against an assumed ceiling of about 800 requests per five-minute window per
+# address, on the theory that two thirds of it left margin. Run 34127322901
+# said otherwise: slice after slice lost pages from roughly offset 480
+# onward, in both the scrape wave and the repair wave that refetched it - the
+# address was throttled well short of 500, not close to it. Whether the real
+# ceiling is per address or per network neighbourhood (twenty concurrent
+# runners share related Azure ranges) is not established, and this number
+# does not try to establish it either; it just stops asking one address for
+# as much.
+#
+# Halving what one address is asked for does not by itself fix anything - a
+# slice that thins out at 96% of 500 would thin out at 96% of 250 too. What
+# makes it work is that the repair wave now accumulates instead of replacing
+# (see scrape_slice): a slice's first pass reaches most of the way, its
+# second pass starts from there rather than from zero, and two passes each
+# thinning out at their own end still cover the whole slice between them.
+#
+# The honest cost: about 90 slices a day instead of 45, and at twenty
+# concurrent runners that is five waves of runners rather than three. A job
+# spends about 55 seconds on setup regardless of how much it fetches, so
+# halving the slice does not halve the day - it adds roughly two more waves'
+# worth of that fixed setup cost on top of the same total fetching time.
+PAGES_PER_SLICE = 250
 
 # Six digits, not five. Kronos reaches offset 153,791 today; at :05d that
 # renders as six characters while every shallower world stays at five, and a
@@ -47,11 +65,11 @@ def slices(depths):
     different things, and inventing a range for either would publish offsets
     no page exists at.
 
-    The last slice of a world is short. Rounding it up to a full 500 would
-    declare offsets that never existed, and the archive walks to what the
-    manifest declares - it would ask for every one of them and count them as
-    pages no source had, which is the number that says whether a release has
-    holes in it.
+    The last slice of a world is short. Rounding it up to a full
+    PAGES_PER_SLICE would declare offsets that never existed, and the archive
+    walks to what the manifest declares - it would ask for every one of them
+    and count them as pages no source had, which is the number that says
+    whether a release has holes in it.
     """
     out = []
     for world in WORLDS:

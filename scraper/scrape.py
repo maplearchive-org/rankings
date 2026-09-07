@@ -29,10 +29,14 @@ USER_AGENT = (
     "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
 )
 
-# 0.3 seconds, from an address that will make 500 requests and then be thrown
-# away. Do not raise it: 500 at this pace is about two thirds of the roughly
-# 800-per-five-minute-window the evidence points at, and the whole design
-# depends on staying under that rather than discovering exactly where it is.
+# 0.3 seconds, from an address that will make at most PAGES_PER_SLICE
+# requests and then be thrown away. That ceiling was halved in slices.py
+# after the first production run lost pages well short of the 500 it used to
+# be - see that module's comment for the measurement. Nothing here narrows
+# the pacing to match; the run that motivated the cut lost pages from
+# throttling at a fixed pace, not from a pace that was too fast on its own,
+# so there is no evidence 0.3s itself needs to move, only that fewer requests
+# should be asked of one address before it is thrown away.
 REQUEST_INTERVAL_S = 0.3
 
 # Four attempts. The archive's five-minute wait belongs to a world with one

@@ -4,11 +4,11 @@ from floor import FLOOR
 from manifest import depths_of, incomplete_slices, merge_manifest
 from slices import WORLDS, slices
 
-# A depth for every world, each landing on exactly two full 500-page slices -
-# the same twelve-slice shape Tasks 1 and 2 built against, so these tests read
-# the way they did before the level floor made a world's depth a discovery
-# rather than a constant.
-DEPTHS = {f"{one['region']}/{one['world_id']}": 9991 for one in WORLDS}
+# A depth for every world, each landing on exactly two full 250-page slices -
+# the same shape Tasks 1 and 2 built against, so these tests read the way
+# they did before the level floor made a world's depth a discovery rather
+# than a constant, and before Task 6 halved PAGES_PER_SLICE.
+DEPTHS = {f"{one['region']}/{one['world_id']}": 4991 for one in WORLDS}
 
 
 class MergeManifest(unittest.TestCase):
@@ -23,18 +23,18 @@ class MergeManifest(unittest.TestCase):
 
     def test_a_slice_with_all_its_pages_counted_is_complete(self):
         one = slices(DEPTHS)[0]
-        manifest = merge_manifest("2026-09-06", None, {one["asset"]: 500}, DEPTHS)
+        manifest = merge_manifest("2026-09-06", None, {one["asset"]: 250}, DEPTHS)
 
         stored = next(
             s for s in manifest["slices"] if s["asset"] == one["asset"]
         )
         self.assertEqual(stored["status"], "complete")
-        self.assertEqual(stored["pages_present"], 500)
+        self.assertEqual(stored["pages_present"], 250)
         self.assertEqual(len(incomplete_slices(manifest)), len(slices(DEPTHS)) - 1)
 
     def test_a_short_slice_stays_partial_and_stays_in_the_work_list(self):
         one = slices(DEPTHS)[0]
-        manifest = merge_manifest("2026-09-06", None, {one["asset"]: 499}, DEPTHS)
+        manifest = merge_manifest("2026-09-06", None, {one["asset"]: 249}, DEPTHS)
 
         stored = next(
             s for s in manifest["slices"] if s["asset"] == one["asset"]
@@ -46,7 +46,7 @@ class MergeManifest(unittest.TestCase):
 
     def test_a_slice_completed_by_an_earlier_run_is_not_scraped_again(self):
         one = slices(DEPTHS)[0]
-        earlier = merge_manifest("2026-09-06", None, {one["asset"]: 500}, DEPTHS)
+        earlier = merge_manifest("2026-09-06", None, {one["asset"]: 250}, DEPTHS)
 
         # This run counted nothing for it, because it did not fetch it. It
         # also passes no depths - the earlier manifest already recorded them,
@@ -58,7 +58,7 @@ class MergeManifest(unittest.TestCase):
 
     def test_the_counted_total_always_wins_over_an_earlier_claim(self):
         one = slices(DEPTHS)[0]
-        lying = merge_manifest("2026-09-06", None, {one["asset"]: 500}, DEPTHS)
+        lying = merge_manifest("2026-09-06", None, {one["asset"]: 250}, DEPTHS)
 
         corrected = merge_manifest("2026-09-06", lying, {one["asset"]: 12})
 

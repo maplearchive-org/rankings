@@ -10,14 +10,14 @@ from slices import (
 
 
 class SliceArithmetic(unittest.TestCase):
-    def test_a_full_slice_is_five_hundred_pages(self):
+    def test_a_full_slice_is_two_hundred_fifty_pages(self):
         # A depth that lands exactly on two full slices - the shape every
         # world had before the level floor made the last slice of a world
-        # short. Task 1's reasoning about why a slice is 500 requests is
-        # untouched; only how many slices there are changed.
-        for one in slices({"na/1": 9991}):
-            self.assertEqual(one["pages_expected"], 500)
-            self.assertEqual(len(offsets_of(one)), 500)
+        # short. Task 6 halved PAGES_PER_SLICE from 500 to 250; this depth
+        # is chosen to still land on an exact multiple of it.
+        for one in slices({"na/1": 4991}):
+            self.assertEqual(one["pages_expected"], 250)
+            self.assertEqual(len(offsets_of(one)), 250)
 
     def test_an_asset_name_sorts_by_offset_and_names_its_world(self):
         self.assertEqual(
@@ -61,13 +61,13 @@ class SliceArithmetic(unittest.TestCase):
                 )
 
     def test_the_last_slice_of_a_world_is_short_and_not_rounded_up(self):
-        # A slice that declared 500 offsets when only 120 pages remain would
-        # make the archive ask for 380 offsets no page ever existed at and
+        # A slice that declared 250 offsets when only 82 pages remain would
+        # make the archive ask for 168 offsets no page ever existed at and
         # count them as pages no source had - the one number that says
         # whether a release has holes in it.
         world = [one for one in slices({"eu/30": 3311}) if one["world_id"] == 30]
 
-        self.assertEqual([one["pages_expected"] for one in world], [332])
+        self.assertEqual([one["pages_expected"] for one in world], [250, 82])
         self.assertEqual(world[-1]["to"], 3311)
 
     def test_a_world_with_no_discovered_depth_produces_no_slices(self):
@@ -81,7 +81,7 @@ class SliceArithmetic(unittest.TestCase):
         names = [one["asset"] for one in slices({"na/45": 153991})]
 
         self.assertEqual(names, sorted(names))
-        self.assertEqual(names[0], "na-45-000001-004991.ndjson.gz")
+        self.assertEqual(names[0], "na-45-000001-002491.ndjson.gz")
 
 
 if __name__ == "__main__":
