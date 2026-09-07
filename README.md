@@ -28,12 +28,19 @@ is the `page_index` offset the line was fetched at and `r` is Nexon's
 response body for that page, spliced in **verbatim** - never parsed, never
 even decoded.
 
-That matters because some `exp` values run past 2^53. `JSON.parse` rounds a
-number that large silently, and the rounded value still looks entirely
-plausible - nothing about the output says a digit changed. **Quote `exp`
-before any JavaScript parses a line**, or extract it as a string ahead of
-parsing the rest; a parser that has already run is a parser that has already
-lost the precision this format exists to keep.
+That matters because of `exp`. The largest values seen so far are around
+`795025135043493` - about a factor of eleven below 2^53, so `JSON.parse`
+still returns them exactly, and this format is not fixing a corruption that
+is already happening. It is removing the need to know when it starts. A
+character at the level cap accumulates `exp` without the reset every other
+level-up brings, so the number only climbs, and past 2^53 `JSON.parse` rounds
+it silently while the rounded value still looks entirely plausible - nothing
+in the output says a digit changed.
+
+So: **quote `exp` before any JavaScript parses a line**, or extract it as a
+string ahead of parsing the rest. A parser that has already run is a parser
+that has already lost the precision this format exists to keep, and it will
+not tell you which day that started.
 
 ## Retention
 

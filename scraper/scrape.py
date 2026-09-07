@@ -16,11 +16,18 @@ from slices import RANKS_PER_PAGE, asset_name, offsets_of
 
 API_BASE = "https://www.nexon.com/api/maplestory/no-auth/ranking/v2"
 
-# The same string the archive sends from its own address (src/config.ts:34).
-# The archive still sends this string for detect's own character lookups, and
-# one project presenting two different faces to the same endpoint is a
-# difference nobody would find until it mattered.
-USER_AGENT = "Mozilla/5.0"
+# A complete browser string rather than the bare "Mozilla/5.0" this used to
+# send. A stub identifies nothing and looks like exactly what it is.
+#
+# The same string the archive sends from its own address (its src/config.ts).
+# The archive still sends it for detect's own character lookups, and one
+# project presenting two different faces to the same endpoint is a difference
+# nobody would find until it mattered. Change this and the archive's
+# USER_AGENT together, or change neither.
+USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+)
 
 # 0.3 seconds, from an address that will make 500 requests and then be thrown
 # away. Do not raise it: 500 at this pace is about two thirds of the roughly
