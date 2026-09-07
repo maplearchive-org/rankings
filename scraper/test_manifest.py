@@ -112,6 +112,20 @@ class MergeManifest(unittest.TestCase):
 
         self.assertEqual(depths_of(later), {"na/1": 14211})
 
+    def test_a_world_missing_from_the_recorded_depths_can_still_be_added(self):
+        # The bug this guards against: treating the whole depths map as one
+        # fixed-or-not unit freezes a world that failed to search out for the
+        # rest of the day the moment any *other* world's depth is recorded.
+        # The merge must be per world - na/1 already recorded never moves,
+        # but eu/30, missing until now, is free to be added.
+        first = merge_manifest("2026-09-06", None, {}, {"na/1": 14211})
+
+        later = merge_manifest(
+            "2026-09-06", first, {}, {"na/1": 999999, "eu/30": 3311}
+        )
+
+        self.assertEqual(depths_of(later), {"na/1": 14211, "eu/30": 3311})
+
     def test_a_moved_depth_would_have_moved_the_partition(self):
         # Why the test above matters: two searches disagreeing by a page move
         # every slice boundary after the first, and a page can then fall
