@@ -1,5 +1,6 @@
 """The state of a ranking day, as the archive will read it."""
 
+import gzip
 import json
 import os
 from datetime import datetime, timezone
@@ -12,6 +13,20 @@ FORMAT_VERSION = 1
 
 def _path(day):
     return os.path.join("manifests", f"{day}.json")
+
+
+def count_pages(out_dir="out"):
+    """Pages actually in each file under `out_dir`, counted from the file
+    rather than claimed."""
+    counted = {}
+    if os.path.isdir(out_dir):
+        for name in sorted(os.listdir(out_dir)):
+            if not name.endswith(".ndjson.gz"):
+                continue
+            with gzip.open(os.path.join(out_dir, name), "rb") as handle:
+                body = handle.read()
+            counted[name] = len([line for line in body.split(b"\n") if line.strip()])
+    return counted
 
 
 def read_manifest(day):

@@ -9,7 +9,13 @@ from datetime import datetime, timezone
 
 from day import ranking_day
 from floor import deepest_offset
-from manifest import depths_of, incomplete_slices, merge_manifest, read_manifest
+from manifest import (
+    count_pages,
+    depths_of,
+    incomplete_slices,
+    merge_manifest,
+    read_manifest,
+)
 from scrape import Blocked, fetch_body as _fetch_body
 from slices import RANKS_PER_PAGE, WORLDS
 
@@ -18,7 +24,7 @@ class ProbeFailed(Exception):
     """A probe fetch_body could not answer after exhausting its own retries."""
 
 
-def fetch_page(region, world_id, page, state, fetch_body=_fetch_body):
+def fetch_page(region, world_id, page, state, fetch_body=None):
     """
     One page of a world's ranking, parsed into ``{"totalCount", "ranks"}``.
 
@@ -45,7 +51,18 @@ def fetch_page(region, world_id, page, state, fetch_body=_fetch_body):
 
     Pacing and the User-Agent are Task 2's fetch_body, reused rather than
     duplicated - there is no second HTTP path.
+
+    `fetch_body` defaults to None rather than binding `_fetch_body` directly
+    in the signature. A default argument is evaluated once, at definition
+    time, so binding the real network fetcher there would freeze in
+    whatever `_fetch_body` was when the module loaded - a later
+    `patch("plan._fetch_body", ...)` would rebind the module attribute but
+    never reach a call that already closed over the old function object.
+    Resolving it here, on every call, is what lets a test replace the
+    network path at all; getting this wrong is what sent about 300 live
+    requests to Nexon from a test suite in this project already.
     """
+    fetch_body = fetch_body or _fetch_body
     offset = (page - 1) * RANKS_PER_PAGE + 1
     body = fetch_body(region, world_id, offset, state)
     if body is None:
@@ -53,7 +70,7 @@ def fetch_page(region, world_id, page, state, fetch_body=_fetch_body):
     return json.loads(body)
 
 
-def search_missing(recorded, fetch_body=_fetch_body):
+def search_missing(recorded, fetch_body=None):
     """
     The depths found by searching every world `recorded` does not already
     name - never the ones it does, because a depth already recorded must
@@ -69,7 +86,14 @@ def search_missing(recorded, fetch_body=_fetch_body):
     one probe at a time. What was already found for earlier worlds this
     call is kept - losing it would turn one blocked probe into losing
     progress on every world, which is worse than the block itself.
+
+    `fetch_body` defaults to None for the same reason fetch_page's does:
+    main() calls this with no override at all, so if the default bound the
+    real network fetcher at definition time, no test could ever replace it
+    here - a `patch("plan._fetch_body", ...)` would leave this function
+    still holding the object it closed over when the module loaded.
     """
+    fetch_body = fetch_body or _fetch_body
     found = {}
     state = {"blocked_once": False}
 
@@ -105,6 +129,15 @@ def search_missing(recorded, fetch_body=_fetch_body):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--depths", default="{}")
+    # None on the first wave: nothing has been fetched yet, so every slice is
+    # missing and {} says so correctly. The repair wave sets this to the
+    # directory the first wave's artifacts were downloaded into, so the
+    # manifest this invocation builds reflects what actually arrived rather
+    # than starting the day over - without it, read_manifest(day) is still
+    # None (publish.py has not run yet), counted would stay {}, and
+    # incomplete_slices would hand back every slice instead of the handful
+    # that actually failed.
+    parser.add_argument("--out-dir", default=None)
     args = parser.parse_args()
 
     day = ranking_day(datetime.now(timezone.utc))
@@ -134,7 +167,8 @@ def main():
     else:
         print(f"{day}: reusing the recorded depths: {recorded}", file=sys.stderr)
 
-    manifest = merge_manifest(day, previous, {}, recorded)
+    counted = count_pages(args.out_dir) if args.out_dir else {}
+    manifest = merge_manifest(day, previous, counted, recorded)
     work = incomplete_slices(manifest)
 
     # One workflow, one rule: fetch whatever the manifest says is missing. At

@@ -1,26 +1,14 @@
 """Build the manifest for a ranking day from the files that actually arrived."""
 
 import argparse
-import gzip
 import json
-import os
 import sys
 
-from manifest import merge_manifest, read_manifest, write_manifest
-
-
-def count_pages(out_dir="out"):
-    """Pages actually in each file under `out_dir`, counted from the file
-    rather than claimed."""
-    counted = {}
-    if os.path.isdir(out_dir):
-        for name in sorted(os.listdir(out_dir)):
-            if not name.endswith(".ndjson.gz"):
-                continue
-            with gzip.open(os.path.join(out_dir, name), "rb") as handle:
-                body = handle.read()
-            counted[name] = len([line for line in body.split(b"\n") if line.strip()])
-    return counted
+# count_pages lives in manifest.py now - plan.py needs it too, for the repair
+# wave's --out-dir, and duplicating it would let the two copies drift. The
+# import keeps `publish.count_pages` resolving to the same function, so
+# anything that patches or reads it under that name still works.
+from manifest import count_pages, merge_manifest, read_manifest, write_manifest
 
 
 def main():

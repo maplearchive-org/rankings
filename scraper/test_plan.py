@@ -1,10 +1,15 @@
+import gzip
 import json
+import os
+import shutil
+import tempfile
 import unittest
 from unittest.mock import patch
 
 from scrape import Blocked
+from slices import asset_name
 
-from plan import ProbeFailed, fetch_page, search_missing
+from plan import ProbeFailed, fetch_page, main, search_missing
 
 
 class FetchPageDoesNotFakeAnAnswer(unittest.TestCase):
@@ -103,6 +108,98 @@ class SearchMissing(unittest.TestCase):
             search_missing({}, fetch_body=fetch_body)
 
         self.assertEqual(len(set(seen_states)), 1)
+
+
+class MainRespectsOutDir(unittest.TestCase):
+    """
+    plan.py's main() builds its manifest with merge_manifest(day, previous,
+    {}, recorded) - an empty `counted`. That is right for the first
+    invocation of a firing, where nothing has been fetched yet. It would be
+    wrong for the repair wave, which runs before publish.py has ever written
+    a manifest: read_manifest(day) is None, counted would stay {}, and
+    incomplete_slices would hand back every slice rather than the handful
+    that actually failed. --out-dir is what lets the repair wave hand in
+    what really arrived instead.
+
+    A single fake world, with a fetch_body that only ever answers pages 1
+    and 2, is enough to exercise both halves of main() without depending on
+    the real six worlds or their real depths - and small enough that the
+    binary search's own path through it is easy to verify by hand: page 1
+    reports totalCount 15, so `high` starts at 3; the loop tries only page 2
+    before converging on low=2, giving a deepest offset of 211 and a single
+    22-page slice.
+    """
+
+    WORLDS = [{"region": "na", "world_id": 1}]
+    ASSET = asset_name("na", 1, 1, 211)
+    SLICE = {"region": "na", "world_id": 1, "from": 1, "to": 211}
+
+    @staticmethod
+    def _fetch_body(region, world_id, offset, state):
+        if offset == 1:
+            return json.dumps(
+                {"totalCount": 15, "ranks": [{"level": 300}] * 10}
+            ).encode()
+        if offset == 11:
+            return json.dumps(
+                {"totalCount": 15, "ranks": [{"level": 300}] * 5}
+            ).encode()
+        raise AssertionError(f"unexpected offset {offset} for this fake world")
+
+    def _run(self, argv, tmp_dir):
+        cwd = os.getcwd()
+        os.chdir(tmp_dir)
+        github_output = os.path.join(tmp_dir, "github_output")
+        try:
+            with patch("sys.argv", ["plan.py"] + argv), patch(
+                "plan.WORLDS", self.WORLDS
+            ), patch("plan._fetch_body", self._fetch_body), patch.dict(
+                os.environ, {"GITHUB_OUTPUT": github_output}
+            ):
+                code = main()
+            with open(github_output, encoding="utf-8") as handle:
+                outputs = dict(
+                    line.split("=", 1) for line in handle.read().splitlines() if line
+                )
+            return code, outputs
+        finally:
+            os.chdir(cwd)
+
+    def test_with_no_out_dir_every_slice_is_planned(self):
+        # The seam this guards: patch("plan._fetch_body", ...) has to reach
+        # main() through search_missing and fetch_page's own defaults. Both
+        # used to bind the real fetch_body at definition time, so this patch
+        # would silently miss and the test would make a live request - the
+        # wall time this whole file runs in is the evidence it did not.
+        tmp_dir = tempfile.mkdtemp()
+        try:
+            code, outputs = self._run([], tmp_dir)
+            self.assertEqual(code, 0)
+            self.assertEqual(outputs["any"], "true")
+            self.assertEqual(json.loads(outputs["slices"]), [self.SLICE])
+        finally:
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+
+    def test_an_out_dir_holding_a_complete_slice_is_not_planned_again(self):
+        # This is the repair wave's own shape: no committed manifest yet
+        # (read_manifest(day) is None, same as the first wave), but the
+        # slice's file is already sitting in --out-dir, complete. Without
+        # --out-dir carrying that forward, this slice would be planned again
+        # even though its 22 pages already arrived.
+        tmp_dir = tempfile.mkdtemp()
+        try:
+            out_dir = os.path.join(tmp_dir, "out")
+            os.makedirs(out_dir)
+            with gzip.open(os.path.join(out_dir, self.ASSET), "wb") as handle:
+                handle.write(b"{}\n" * 22)
+
+            code, outputs = self._run(["--out-dir", out_dir], tmp_dir)
+
+            self.assertEqual(code, 0)
+            self.assertEqual(outputs["any"], "false")
+            self.assertEqual(json.loads(outputs["slices"]), [])
+        finally:
+            shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
 if __name__ == "__main__":
