@@ -1,7 +1,6 @@
 import unittest
 
 from slices import (
-    PAGES_PER_WORLD,
     RANKS_PER_PAGE,
     WORLDS,
     asset_name,
@@ -11,51 +10,23 @@ from slices import (
 
 
 class SliceArithmetic(unittest.TestCase):
-    def test_twelve_slices_cover_every_offset_exactly_once(self):
-        all_slices = slices()
-        self.assertEqual(len(all_slices), len(WORLDS) * 2)
-
-        seen = set()
-        for one in all_slices:
-            for offset in offsets_of(one):
-                key = (one["region"], one["world_id"], offset)
-                self.assertNotIn(key, seen, f"{key} is covered twice")
-                seen.add(key)
-
-        self.assertEqual(len(seen), len(WORLDS) * PAGES_PER_WORLD)
-
-        # No gap: every offset the archive will ask for is in the set. Built
-        # from the constants rather than from slices(), so a boundary that is
-        # wrong in the module cannot make itself right here.
-        for world in WORLDS:
-            for page in range(PAGES_PER_WORLD):
-                offset = page * RANKS_PER_PAGE + 1
-                key = (world["region"], world["world_id"], offset)
-                self.assertIn(key, seen, f"{key} is covered by no slice")
-
-    def test_a_slice_is_five_hundred_pages(self):
-        for one in slices():
+    def test_a_full_slice_is_five_hundred_pages(self):
+        # A depth that lands exactly on two full slices - the shape every
+        # world had before the level floor made the last slice of a world
+        # short. Task 1's reasoning about why a slice is 500 requests is
+        # untouched; only how many slices there are changed.
+        for one in slices({"na/1": 9991}):
             self.assertEqual(one["pages_expected"], 500)
             self.assertEqual(len(offsets_of(one)), 500)
 
-    def test_the_ranges_are_the_two_halves_of_a_world(self):
-        first_world = [
-            (one["from"], one["to"])
-            for one in slices()
-            if one["region"] == "na" and one["world_id"] == 1
-        ]
-
-        self.assertEqual(first_world, [(1, 4991), (5001, 9991)])
-
     def test_an_asset_name_sorts_by_offset_and_names_its_world(self):
-        self.assertEqual(asset_name("na", 1, 1, 4991), "na-1-00001-04991.ndjson.gz")
+        self.assertEqual(
+            asset_name("na", 1, 1, 4991), "na-1-000001-004991.ndjson.gz"
+        )
 
     def test_the_specification_values_are_what_the_design_says(self):
-        # Deliberately restates what the module declares. Every other test here
-        # derives its expectations from WORLDS and PAGES_PER_WORLD, so without
-        # this one a world quietly dropped from the list would leave the whole
-        # suite green while twelve slices stopped covering what they must.
-        # A real change - MapleStory adding a world - has to touch two places.
+        # Deliberately restates what the module declares. A real change -
+        # MapleStory adding a world - has to touch two places.
         self.assertEqual(
             WORLDS,
             [
@@ -67,8 +38,50 @@ class SliceArithmetic(unittest.TestCase):
                 {"region": "eu", "world_id": 46},
             ],
         )
-        self.assertEqual(PAGES_PER_WORLD, 1000)
         self.assertEqual(RANKS_PER_PAGE, 10)
+
+    def test_the_slices_cover_a_discovered_range_with_no_gap(self):
+        # The test that matters, with the range as an input rather than a
+        # constant. An overlap is harmless - the archive writes with INSERT OR
+        # REPLACE - and a gap is a page nobody ever fetches.
+        depths = {"na/45": 153991, "eu/30": 3311}
+
+        seen = set()
+        for one in slices(depths):
+            for offset in offsets_of(one):
+                key = (one["region"], one["world_id"], offset)
+                self.assertNotIn(key, seen, f"{key} is covered twice")
+                seen.add(key)
+
+        for key, deepest in depths.items():
+            region, world_id = key.split("/")
+            for offset in range(1, deepest + 1, RANKS_PER_PAGE):
+                self.assertIn(
+                    (region, int(world_id), offset), seen, f"{key} {offset} uncovered"
+                )
+
+    def test_the_last_slice_of_a_world_is_short_and_not_rounded_up(self):
+        # A slice that declared 500 offsets when only 120 pages remain would
+        # make the archive ask for 380 offsets no page ever existed at and
+        # count them as pages no source had - the one number that says
+        # whether a release has holes in it.
+        world = [one for one in slices({"eu/30": 3311}) if one["world_id"] == 30]
+
+        self.assertEqual([one["pages_expected"] for one in world], [332])
+        self.assertEqual(world[-1]["to"], 3311)
+
+    def test_a_world_with_no_discovered_depth_produces_no_slices(self):
+        self.assertEqual(slices({}), [])
+
+    def test_asset_names_sort_by_offset_across_the_deepest_world(self):
+        # Six digits, not five. Kronos reaches offset 153,791: at :05d that
+        # renders as six characters while every shallower world stays at five,
+        # and a listing of mixed widths stops sorting by offset - which is the
+        # only thing the padding is for.
+        names = [one["asset"] for one in slices({"na/45": 153991})]
+
+        self.assertEqual(names, sorted(names))
+        self.assertEqual(names[0], "na-45-000001-004991.ndjson.gz")
 
 
 if __name__ == "__main__":

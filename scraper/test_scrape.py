@@ -26,7 +26,7 @@ class ScrapeSliceBlockedImmediately(unittest.TestCase):
             self.assertEqual(exit_code, 0)
 
             with gzip.open(
-                os.path.join("out", "na-45-00001-00001.ndjson.gz"), "rb"
+                os.path.join("out", "na-45-000001-000001.ndjson.gz"), "rb"
             ) as handle:
                 body = handle.read()
 
