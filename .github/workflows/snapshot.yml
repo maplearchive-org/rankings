@@ -14,7 +14,14 @@ on:
     # whole, so a firing GitHub delays by a few minutes costs nothing. A
     # firing that never happens costs the day - which is the whole reason this
     # is a cron entry and not something more clever.
-    - cron: '0 18 * * *'
+    #
+    # The minute is 13 and not 0 because the top of the hour is the most
+    # oversubscribed slot on GitHub's shared scheduler. On '0 18' this entry
+    # fired once in two days, and that one firing landed at 21:08 UTC - three
+    # hours late, long past the polling window above. Off-the-hour buys no
+    # guarantee, a schedule stays best effort either way; it only leaves the
+    # queue that swallowed both days.
+    - cron: '13 18 * * *'
   workflow_dispatch:
 
 permissions:
