@@ -200,7 +200,18 @@ def scrape_slice(day, region, world_id, first, last):
             status = "partial"
             continue
 
-        lines[offset] = slice_line(offset, body)
+        try:
+            lines[offset] = slice_line(offset, body)
+        except ValueError as error:
+            # A page that cannot go on one line is the same kind of loss as a
+            # short answer above: one offset, left out, still in the archive's
+            # resume set. Letting it raise instead cost two whole ranking days
+            # - the exception escaped this function, so the write below never
+            # ran, the job exited non-zero, and upload-artifact was skipped,
+            # which threw away every page the slice had already fetched.
+            print(f"Offset {offset} - {error} Left out.", file=sys.stderr)
+            status = "partial"
+            continue
 
     ordered = [lines[offset] for offset in expected if offset in lines]
     # Completeness is decided against the union just written, not against
