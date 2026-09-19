@@ -155,5 +155,56 @@ class ScrapeSliceGapFilling(unittest.TestCase):
         self.assertEqual(offsets, [1, 11, 21])
 
 
+class ScrapeSliceUnusableBody(unittest.TestCase):
+    """
+    A page this worker cannot put on one line is one page lost, never the
+    slice. scrape_slice writes what it has for every other soft failure -
+    a 403, a short answer - and returns 0 so upload-artifact still runs.
+    A body it cannot encode has to travel the same road: on 2026-09-18 it
+    did not, and every one of the day's 101 slices exited non-zero, so the
+    release was published carrying its manifest and not one page.
+    """
+
+    def setUp(self):
+        self.day = ranking_day(datetime.now(timezone.utc))
+        self.tmp_dir = tempfile.mkdtemp()
+        self.cwd = os.getcwd()
+        os.chdir(self.tmp_dir)
+        self.addCleanup(os.chdir, self.cwd)
+        self.addCleanup(shutil.rmtree, self.tmp_dir, ignore_errors=True)
+
+    def test_a_page_with_an_interior_newline_is_left_out_not_raised(self):
+        full_page = (
+            b'{"totalCount":1,"ranks":['
+            + b",".join(b'{"characterName":"x"}' for _ in range(10))
+            + b"]}"
+        )
+        # A full page by rank_count's reckoning, so it reaches slice_line
+        # rather than being filtered as a short answer - but carrying an
+        # interior newline, which cannot go on one line.
+        broken_page = full_page.replace(b'"ranks":[', b'"ranks":[\n', 1)
+
+        def fake_fetch_body(region, world_id, offset, state):
+            return broken_page if offset == 11 else full_page
+
+        with patch("scrape.fetch_body", side_effect=fake_fetch_body):
+            exit_code = scrape_slice(self.day, "na", 45, 1, 21)
+
+        self.assertEqual(exit_code, 0)
+
+        with gzip.open(
+            os.path.join("out", "na-45-000001-000021.ndjson.gz"), "rb"
+        ) as handle:
+            body = handle.read()
+        pages = [line for line in body.split(b"\n") if line.strip()]
+        offsets = [
+            int(re.match(rb'\{"o":(\d+),', line).group(1)) for line in pages
+        ]
+
+        # 11 is left out and stays in the archive's resume set. 1 and 21 are
+        # kept, which is the whole reason for not raising.
+        self.assertEqual(offsets, [1, 21])
+
+
 if __name__ == "__main__":
     unittest.main()
