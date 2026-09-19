@@ -1,7 +1,7 @@
 {
   "format_version": 1,
   "ranking_day": "2026-09-19",
-  "generated_at": "2026-09-19T18:14:48.484358+00:00",
+  "generated_at": "2026-09-19T18:30:14.918037+00:00",
   "ranks_per_page": 10,
   "floor": 275,
   "depths": {
@@ -20,8 +20,8 @@
       "to": 2491,
       "pages_expected": 250,
       "asset": "na-1-000001-002491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -30,8 +30,8 @@
       "to": 4991,
       "pages_expected": 250,
       "asset": "na-1-002501-004991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -40,8 +40,8 @@
       "to": 7491,
       "pages_expected": 250,
       "asset": "na-1-005001-007491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -50,8 +50,8 @@
       "to": 9991,
       "pages_expected": 250,
       "asset": "na-1-007501-009991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -60,8 +60,8 @@
       "to": 12491,
       "pages_expected": 250,
       "asset": "na-1-010001-012491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -70,8 +70,8 @@
       "to": 14991,
       "pages_expected": 250,
       "asset": "na-1-012501-014991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -80,8 +80,8 @@
       "to": 15301,
       "pages_expected": 31,
       "asset": "na-1-015001-015301.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 31,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -90,8 +90,8 @@
       "to": 2491,
       "pages_expected": 250,
       "asset": "na-19-000001-002491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -100,8 +100,8 @@
       "to": 4991,
       "pages_expected": 250,
       "asset": "na-19-002501-004991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -110,8 +110,8 @@
       "to": 7491,
       "pages_expected": 250,
       "asset": "na-19-005001-007491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -120,8 +120,8 @@
       "to": 9991,
       "pages_expected": 250,
       "asset": "na-19-007501-009991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -130,8 +130,8 @@
       "to": 12491,
       "pages_expected": 250,
       "asset": "na-19-010001-012491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -140,8 +140,8 @@
       "to": 14991,
       "pages_expected": 250,
       "asset": "na-19-012501-014991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -150,8 +150,8 @@
       "to": 17491,
       "pages_expected": 250,
       "asset": "na-19-015001-017491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -160,8 +160,8 @@
       "to": 19991,
       "pages_expected": 250,
       "asset": "na-19-017501-019991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -170,8 +170,8 @@
       "to": 20341,
       "pages_expected": 35,
       "asset": "na-19-020001-020341.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 35,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -180,8 +180,8 @@
       "to": 2491,
       "pages_expected": 250,
       "asset": "na-45-000001-002491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -190,8 +190,8 @@
       "to": 4991,
       "pages_expected": 250,
       "asset": "na-45-002501-004991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -200,8 +200,8 @@
       "to": 7491,
       "pages_expected": 250,
       "asset": "na-45-005001-007491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -210,8 +210,8 @@
       "to": 9991,
       "pages_expected": 250,
       "asset": "na-45-007501-009991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -220,8 +220,8 @@
       "to": 12491,
       "pages_expected": 250,
       "asset": "na-45-010001-012491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -230,8 +230,8 @@
       "to": 14991,
       "pages_expected": 250,
       "asset": "na-45-012501-014991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -240,8 +240,8 @@
       "to": 17491,
       "pages_expected": 250,
       "asset": "na-45-015001-017491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -250,8 +250,8 @@
       "to": 19991,
       "pages_expected": 250,
       "asset": "na-45-017501-019991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -260,8 +260,8 @@
       "to": 22491,
       "pages_expected": 250,
       "asset": "na-45-020001-022491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -270,8 +270,8 @@
       "to": 24991,
       "pages_expected": 250,
       "asset": "na-45-022501-024991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -280,8 +280,8 @@
       "to": 27491,
       "pages_expected": 250,
       "asset": "na-45-025001-027491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -290,8 +290,8 @@
       "to": 29991,
       "pages_expected": 250,
       "asset": "na-45-027501-029991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -300,8 +300,8 @@
       "to": 32491,
       "pages_expected": 250,
       "asset": "na-45-030001-032491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -310,8 +310,8 @@
       "to": 34991,
       "pages_expected": 250,
       "asset": "na-45-032501-034991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -320,8 +320,8 @@
       "to": 37491,
       "pages_expected": 250,
       "asset": "na-45-035001-037491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -330,8 +330,8 @@
       "to": 39991,
       "pages_expected": 250,
       "asset": "na-45-037501-039991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -340,8 +340,8 @@
       "to": 42491,
       "pages_expected": 250,
       "asset": "na-45-040001-042491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -350,8 +350,8 @@
       "to": 44991,
       "pages_expected": 250,
       "asset": "na-45-042501-044991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -360,8 +360,8 @@
       "to": 47491,
       "pages_expected": 250,
       "asset": "na-45-045001-047491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -370,8 +370,8 @@
       "to": 49991,
       "pages_expected": 250,
       "asset": "na-45-047501-049991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -380,8 +380,8 @@
       "to": 52491,
       "pages_expected": 250,
       "asset": "na-45-050001-052491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -390,8 +390,8 @@
       "to": 54991,
       "pages_expected": 250,
       "asset": "na-45-052501-054991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -400,8 +400,8 @@
       "to": 57491,
       "pages_expected": 250,
       "asset": "na-45-055001-057491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -410,8 +410,8 @@
       "to": 59991,
       "pages_expected": 250,
       "asset": "na-45-057501-059991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -420,8 +420,8 @@
       "to": 62491,
       "pages_expected": 250,
       "asset": "na-45-060001-062491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -430,8 +430,8 @@
       "to": 64991,
       "pages_expected": 250,
       "asset": "na-45-062501-064991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -440,8 +440,8 @@
       "to": 67491,
       "pages_expected": 250,
       "asset": "na-45-065001-067491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -450,8 +450,8 @@
       "to": 69991,
       "pages_expected": 250,
       "asset": "na-45-067501-069991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -460,8 +460,8 @@
       "to": 72491,
       "pages_expected": 250,
       "asset": "na-45-070001-072491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -470,8 +470,8 @@
       "to": 74991,
       "pages_expected": 250,
       "asset": "na-45-072501-074991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -480,8 +480,8 @@
       "to": 77491,
       "pages_expected": 250,
       "asset": "na-45-075001-077491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -490,8 +490,8 @@
       "to": 79991,
       "pages_expected": 250,
       "asset": "na-45-077501-079991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -500,8 +500,8 @@
       "to": 82491,
       "pages_expected": 250,
       "asset": "na-45-080001-082491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -510,8 +510,8 @@
       "to": 84991,
       "pages_expected": 250,
       "asset": "na-45-082501-084991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -520,8 +520,8 @@
       "to": 87491,
       "pages_expected": 250,
       "asset": "na-45-085001-087491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -530,8 +530,8 @@
       "to": 89991,
       "pages_expected": 250,
       "asset": "na-45-087501-089991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -540,8 +540,8 @@
       "to": 92491,
       "pages_expected": 250,
       "asset": "na-45-090001-092491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -550,8 +550,8 @@
       "to": 94991,
       "pages_expected": 250,
       "asset": "na-45-092501-094991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -560,8 +560,8 @@
       "to": 97491,
       "pages_expected": 250,
       "asset": "na-45-095001-097491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -570,8 +570,8 @@
       "to": 99991,
       "pages_expected": 250,
       "asset": "na-45-097501-099991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -580,8 +580,8 @@
       "to": 102491,
       "pages_expected": 250,
       "asset": "na-45-100001-102491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -590,8 +590,8 @@
       "to": 104991,
       "pages_expected": 250,
       "asset": "na-45-102501-104991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -600,8 +600,8 @@
       "to": 107491,
       "pages_expected": 250,
       "asset": "na-45-105001-107491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -610,8 +610,8 @@
       "to": 109991,
       "pages_expected": 250,
       "asset": "na-45-107501-109991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -620,8 +620,8 @@
       "to": 112491,
       "pages_expected": 250,
       "asset": "na-45-110001-112491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -630,8 +630,8 @@
       "to": 114991,
       "pages_expected": 250,
       "asset": "na-45-112501-114991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -640,8 +640,8 @@
       "to": 117491,
       "pages_expected": 250,
       "asset": "na-45-115001-117491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -650,8 +650,8 @@
       "to": 119991,
       "pages_expected": 250,
       "asset": "na-45-117501-119991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -660,8 +660,8 @@
       "to": 122491,
       "pages_expected": 250,
       "asset": "na-45-120001-122491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -670,8 +670,8 @@
       "to": 124991,
       "pages_expected": 250,
       "asset": "na-45-122501-124991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -680,8 +680,8 @@
       "to": 127491,
       "pages_expected": 250,
       "asset": "na-45-125001-127491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -690,8 +690,8 @@
       "to": 129991,
       "pages_expected": 250,
       "asset": "na-45-127501-129991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -700,8 +700,8 @@
       "to": 132491,
       "pages_expected": 250,
       "asset": "na-45-130001-132491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -710,8 +710,8 @@
       "to": 134991,
       "pages_expected": 250,
       "asset": "na-45-132501-134991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -720,8 +720,8 @@
       "to": 137491,
       "pages_expected": 250,
       "asset": "na-45-135001-137491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -730,8 +730,8 @@
       "to": 139991,
       "pages_expected": 250,
       "asset": "na-45-137501-139991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -740,8 +740,8 @@
       "to": 142491,
       "pages_expected": 250,
       "asset": "na-45-140001-142491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -750,8 +750,8 @@
       "to": 144991,
       "pages_expected": 250,
       "asset": "na-45-142501-144991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -760,8 +760,8 @@
       "to": 147491,
       "pages_expected": 250,
       "asset": "na-45-145001-147491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -770,8 +770,8 @@
       "to": 149991,
       "pages_expected": 250,
       "asset": "na-45-147501-149991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -780,8 +780,8 @@
       "to": 152491,
       "pages_expected": 250,
       "asset": "na-45-150001-152491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -790,8 +790,8 @@
       "to": 154991,
       "pages_expected": 250,
       "asset": "na-45-152501-154991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -800,8 +800,8 @@
       "to": 157491,
       "pages_expected": 250,
       "asset": "na-45-155001-157491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -810,8 +810,8 @@
       "to": 159991,
       "pages_expected": 250,
       "asset": "na-45-157501-159991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -820,8 +820,8 @@
       "to": 162491,
       "pages_expected": 250,
       "asset": "na-45-160001-162491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -830,8 +830,8 @@
       "to": 164991,
       "pages_expected": 250,
       "asset": "na-45-162501-164991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -840,8 +840,8 @@
       "to": 166591,
       "pages_expected": 160,
       "asset": "na-45-165001-166591.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 160,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -850,8 +850,8 @@
       "to": 2491,
       "pages_expected": 250,
       "asset": "na-70-000001-002491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -860,8 +860,8 @@
       "to": 4991,
       "pages_expected": 250,
       "asset": "na-70-002501-004991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -870,8 +870,8 @@
       "to": 7491,
       "pages_expected": 250,
       "asset": "na-70-005001-007491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -880,8 +880,8 @@
       "to": 9991,
       "pages_expected": 250,
       "asset": "na-70-007501-009991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -890,8 +890,8 @@
       "to": 12491,
       "pages_expected": 250,
       "asset": "na-70-010001-012491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -900,8 +900,8 @@
       "to": 14991,
       "pages_expected": 250,
       "asset": "na-70-012501-014991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -910,8 +910,8 @@
       "to": 17491,
       "pages_expected": 250,
       "asset": "na-70-015001-017491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -920,8 +920,8 @@
       "to": 19991,
       "pages_expected": 250,
       "asset": "na-70-017501-019991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -930,8 +930,8 @@
       "to": 22491,
       "pages_expected": 250,
       "asset": "na-70-020001-022491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "na",
@@ -940,8 +940,8 @@
       "to": 23321,
       "pages_expected": 83,
       "asset": "na-70-022501-023321.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 83,
+      "status": "complete"
     },
     {
       "region": "eu",
@@ -950,8 +950,8 @@
       "to": 2491,
       "pages_expected": 250,
       "asset": "eu-30-000001-002491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "eu",
@@ -960,8 +960,8 @@
       "to": 3461,
       "pages_expected": 97,
       "asset": "eu-30-002501-003461.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 97,
+      "status": "complete"
     },
     {
       "region": "eu",
@@ -970,8 +970,8 @@
       "to": 2491,
       "pages_expected": 250,
       "asset": "eu-46-000001-002491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "eu",
@@ -980,8 +980,8 @@
       "to": 4991,
       "pages_expected": 250,
       "asset": "eu-46-002501-004991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "eu",
@@ -990,8 +990,8 @@
       "to": 7491,
       "pages_expected": 250,
       "asset": "eu-46-005001-007491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "eu",
@@ -1000,8 +1000,8 @@
       "to": 9991,
       "pages_expected": 250,
       "asset": "eu-46-007501-009991.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "eu",
@@ -1010,8 +1010,8 @@
       "to": 12491,
       "pages_expected": 250,
       "asset": "eu-46-010001-012491.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 250,
+      "status": "complete"
     },
     {
       "region": "eu",
@@ -1020,8 +1020,8 @@
       "to": 12961,
       "pages_expected": 47,
       "asset": "eu-46-012501-012961.ndjson.gz",
-      "pages_present": 0,
-      "status": "missing"
+      "pages_present": 47,
+      "status": "complete"
     }
   ]
 }
